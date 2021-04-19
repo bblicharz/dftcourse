@@ -1,0 +1,2 @@
+Fastapi(all)
+uvicorn(0.13.4 )
