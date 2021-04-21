@@ -35,7 +35,11 @@ def method():
 
 
 @app.get("/auth")
-def auth(password, password_hash, response: Response):
+def auth(response: Response, password=None, password_hash=None):
+    if not response or not password_hash:
+        response.status_code = 401
+        return response
+
     hashed = hashlib.sha512(password).hexdigest()
     if hashed == password_hash:
         response.status_code = 204
