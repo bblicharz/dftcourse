@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
+import hashlib
 
 app = FastAPI()
 
@@ -31,3 +32,13 @@ def method():
 @app.post("/method", status_code=201)
 def method():
     return {"method": "POST"}
+
+
+@app.get("/auth")
+def auth(password, password_hash, response: Response):
+    hashed = hashlib.sha512(password).hexdigest()
+    if hashed == password_hash:
+        response.status_code = 204
+    else:
+        response.status_code = 401
+    return response
