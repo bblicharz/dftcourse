@@ -63,7 +63,7 @@ class Person(BaseModel):
 @app.post("/register", status_code=201)
 def register(person: Person):
     global counter
-
+    global _DB
     daysnum = len(person.name) + len(person.surname)
 
     curr_date = datetime.datetime.today()
@@ -81,4 +81,22 @@ def register(person: Person):
     }
     counter += 1
 
+    _DB[counter] = ret
+
     return ret
+
+
+@app.get("/patient/{item_id}")
+def patient(response: Response, item_id: int):
+    if item_id < 1:
+        response.status_code = 401
+        return response
+
+    global _DB
+
+    pat = _DB.get(item_id)
+    if pat is None:
+        response.status_code = 404
+        return response
+    else:
+        return pat
