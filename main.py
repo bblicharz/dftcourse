@@ -64,7 +64,7 @@ class Person(BaseModel):
 def register(person: Person):
     global counter
 
-    daysnum = len(person.name.strip()) + len(person.surname.strip())
+    daysnum = len(person.name) + len(person.surname)
 
     curr_date = datetime.datetime.today()
     vacc_date = curr_date + datetime.timedelta(days=daysnum)
