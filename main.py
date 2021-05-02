@@ -1,8 +1,10 @@
-import datetime
+from datetime import date, datetime
+
 from fastapi import FastAPI, Response
 import hashlib
 
 from pydantic import BaseModel
+from starlette.requests import Request
 
 app = FastAPI()
 
@@ -101,3 +103,27 @@ def patient(response: Response, item_id: int):
         return response
     else:
         return pat
+
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+
+@app.get("/date/")
+async def read_items():
+    curr_date = date.today()
+    curr = curr_date.strftime('%Y-%m-%d')
+    html_content = """
+    <html>
+        <head>
+            <title>Some HTML in here</title>
+        </head>
+        <body>
+            <h1>Hello! Today date is YYYY-MM-DD</h1>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content.replace('YYYY-MM-DD', curr), status_code=200)
+
+
