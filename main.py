@@ -110,7 +110,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 
-@app.get("/date/")
+@app.get("/hello")
 async def read_items():
     curr_date = date.today()
     curr = curr_date.strftime('%Y-%m-%d')
