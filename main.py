@@ -3,8 +3,9 @@ from datetime import date
 from fastapi import FastAPI, Response, HTTPException
 
 from hashlib import sha256
-from random import random
+from random import random, choice
 
+from starlette import status
 from starlette.responses import HTMLResponse
 
 app = FastAPI()
@@ -32,27 +33,56 @@ async def read_items():
     return HTMLResponse(content=html_content.replace('YYYY-MM-DD', curr), status_code=200)
 
 
-@app.post("/login_session", status_code=201)
-def login(user: str, password: str, response: Response):
-    session_token = sha256(f"{user}{password}{app.secret_key}".encode()).hexdigest()
-    app.access_tokens.append(session_token)
-    if user != app.login:
-        raise HTTPException(status_code=401)
-    if password != app.secret_key:
-        raise HTTPException(status_code=401)
-    response.set_cookie(key="session_token", value=session_token)
+# @app.post("/login_session", status_code=201)
+# def login(user: str, password: str, response: Response):
+#     session_token = sha256(f"{user}{password}{app.secret_key}".encode()).hexdigest()
+#     app.access_tokens.append(session_token)
+#     if user != app.login:
+#         raise HTTPException(status_code=401)
+#     if password != app.secret_key:
+#         raise HTTPException(status_code=401)
+#     response.set_cookie(key="session_token", value=session_token)
+#     return response
+#
+#
+# @app.post("/login_token", status_code=201)
+# def token(user: str, password: str):
+#     if user != app.login:
+#         raise HTTPException(status_code=401)
+#     if password != app.secret_key:
+#         raise HTTPException(status_code=401)
+#     return {"token": random.choice()}
+
+from fastapi import Depends, FastAPI
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+security = HTTPBasic()
+
+cookie_session = None
+new_token = None
+
+
+
+
+@app.post("/login_session")
+def login_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+    authenticate(credentials)
+    global cookie_session
+    cookie_session = "a"
+    response.set_cookie(key="session_token", value=cookie_session)
+    response.status_code = status.HTTP_201_CREATED
     return response
 
 
-@app.post("/login_token", status_code=201)
-def token(user: str, password: str):
-    if user != app.login:
-        raise HTTPException(status_code=401)
-    if password != app.secret_key:
-        raise HTTPException(status_code=401)
-    return {"token": random.choice()}
+def authenticate(credentials):
+    if credentials.username != '4dm1n' and credentials.password != 'NotSoSecurePa$$':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
-@app.get("/test")
-def test():
-    return "test"
+@app.post("/login_token")
+def login_token(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+    authenticate(credentials)
+    global new_token
+    new_token = 'b'
+    response.status_code = status.HTTP_201_CREATED
+    return {"token": new_token}
