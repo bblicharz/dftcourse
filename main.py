@@ -9,7 +9,7 @@ from random import random, choice
 
 from pydantic import json
 from starlette import status
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, PlainTextResponse
 
 app = FastAPI()
 
@@ -91,16 +91,23 @@ def login_token(response: Response, credentials: HTTPBasicCredentials = Depends(
     return {"token": new_token}
 
 
+def format_response(format):
+    if format == 'json':
+        return {"message": "Welcome!"}
+    elif format == 'html':
+        content = '<h1>Welcome!</h1>'
+        return HTMLResponse(content=content)
+    else:
+        content = 'Welcome!'
+        return PlainTextResponse(content=content)
+
+
 @app.get("/welcome_session")
 def welcome_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
     if session_token != cookie_session:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     response.status_code = status.HTTP_200_OK
-    if format == 'json':
-        return {"message": "Welcome!"}
-    if format == 'html':
-        content = '<h1>Welcome!</h1>'
-        return HTMLResponse(content=content)
+    return format_response(format)
 
 
 @app.get("/welcome_token")
@@ -108,11 +115,7 @@ def welcome_token(response: Response, token: Optional[str], format=None):
     if token != new_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     response.status_code = status.HTTP_200_OK
-    if format == 'json':
-        return {"message": "Welcome!"}
-    if format == 'html':
-        content = '<h1>Welcome!</h1>'
-        return HTMLResponse(content=content)
+    return format_response(format)
 
 
 
