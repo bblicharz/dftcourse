@@ -1,10 +1,13 @@
+from cgitb import html
 from datetime import date
+from typing import Optional
 
-from fastapi import FastAPI, Response, HTTPException
+from fastapi import FastAPI, Response, HTTPException, Cookie
 
 from hashlib import sha256
 from random import random, choice
 
+from pydantic import json
 from starlette import status
 from starlette.responses import HTMLResponse
 
@@ -86,3 +89,31 @@ def login_token(response: Response, credentials: HTTPBasicCredentials = Depends(
     new_token = 'b'
     response.status_code = status.HTTP_201_CREATED
     return {"token": new_token}
+
+
+@app.get("/welcome_session")
+def welcome_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
+    if session_token != cookie_session:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    response.status_code = status.HTTP_200_OK
+    if format == 'json':
+        return {"message": "Welcome!"}
+    if format == 'html':
+        content = '<h1>Welcome!</h1>'
+        return HTMLResponse(content=content)
+
+
+@app.get("/welcome_token")
+def welcome_token(response: Response, token: Optional[str], format=None):
+    if token != new_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    response.status_code = status.HTTP_200_OK
+    if format == 'json':
+        return {"message": "Welcome!"}
+    if format == 'html':
+        content = '<h1>Welcome!</h1>'
+        return HTMLResponse(content=content)
+
+
+
+
