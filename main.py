@@ -134,20 +134,20 @@ def logout_session(response: Response, session_token: Optional[str] = Cookie(Non
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     cookie_session = None
     response.status_code = status.HTTP_302_FOUND
-    return RedirectResponse('http://127.0.0.1:8000/logged_out')
+    return RedirectResponse('http://127.0.0.1:8000/logged_out', status_code=302)
 
 @app.delete('/logout_token')
-def logout_token(response: Response, token: Optional[str], format=None):
+def logout_token(response: Response, token: Optional[str]):
     global new_token
     if token != new_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = None
     response.status_code = status.HTTP_302_FOUND
-    return RedirectResponse('http://127.0.0.1:8000/logged_out')
+    return RedirectResponse('http://127.0.0.1:8000/logged_out', status_code=302)
 
 
 @app.get('/logged_out')
-def logged_out(response: Response, format: str):
+def logged_out(response: Response, format=None):
     response.status_code = status.HTTP_200_OK
     return format_farewell(format)
 
