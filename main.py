@@ -9,7 +9,7 @@ from random import random, choice
 
 from pydantic import json
 from starlette import status
-from starlette.responses import HTMLResponse, PlainTextResponse
+from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 
 app = FastAPI()
 
@@ -101,6 +101,16 @@ def format_response(format):
         content = 'Welcome!'
         return PlainTextResponse(content=content)
 
+def format_farewell(format):
+    if format == 'json':
+        return {"message": "Logged out!"}
+    elif format == 'html':
+        content = '<h1>Logged out!</h1>'
+        return HTMLResponse(content=content)
+    else:
+        content = 'Logged out!'
+        return PlainTextResponse(content=content)
+
 
 @app.get("/welcome_session")
 def welcome_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
@@ -117,6 +127,27 @@ def welcome_token(response: Response, token: Optional[str], format=None):
     response.status_code = status.HTTP_200_OK
     return format_response(format)
 
+@app.delete('/logout_session')
+def logout_session(response: Response, session_token: Optional[str] = Cookie(None)):
+    global cookie_session
+    if session_token != cookie_session:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    cookie_session = None
+    response.status_code = status.HTTP_302_FOUND
+    return RedirectResponse('http://127.0.0.1:8000/logged_out')
+
+@app.delete('/logout_token')
+def logout_token(response: Response, token: Optional[str], format=None):
+    global new_token
+    if token != new_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    new_token = None
+    response.status_code = status.HTTP_302_FOUND
+    return RedirectResponse('http://127.0.0.1:8000/logged_out')
 
 
+@app.get('/logged_out')
+def logged_out(response: Response, format: str):
+    response.status_code = status.HTTP_200_OK
+    return format_farewell(format)
 
