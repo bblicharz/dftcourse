@@ -1,13 +1,11 @@
-from cgitb import html
+import string
 from datetime import date
-from typing import Optional
+from random import choice
+from typing import Optional, OrderedDict
 
 from fastapi import FastAPI, Response, HTTPException, Cookie
 
-from hashlib import sha256
-from random import random, choice
 
-from pydantic import json
 from starlette import status
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 
@@ -61,17 +59,41 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 security = HTTPBasic()
 
-cookie_session = None
-new_token = None
+
+class LRU(OrderedDict):
+    'Limit size, evicting the least recently looked-up key when full'
+
+    def __init__(self, maxsize=128, *args, **kwds):
+        self.maxsize = maxsize
+        super().__init__(*args, **kwds)
+
+    # def __getitem__(self, key):
+    #     value = super().__getitem__(key)
+    #     self.move_to_end(key)
+    #     return value
+
+    def __setitem__(self, key, value):
+        if key in self:
+            self.move_to_end(key)
+        super().__setitem__(key, value)
+        if len(self) > self.maxsize:
+            oldest = next(iter(self))
+            del self[oldest]
 
 
+cookie_db = LRU(maxsize=3)
+token_db = LRU(maxsize=3)
+
+
+def random_string(length):
+    return ''.join(choice(string.ascii_letters) for i in range(length))
 
 
 @app.post("/login_session")
 def login_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     authenticate(credentials)
-    global cookie_session
-    cookie_session = "a"
+    cookie_session = random_string(10)
+    cookie_db[cookie_session] = None
     response.set_cookie(key="session_token", value=cookie_session)
     response.status_code = status.HTTP_201_CREATED
     return response
@@ -85,8 +107,8 @@ def authenticate(credentials):
 @app.post("/login_token")
 def login_token(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     authenticate(credentials)
-    global new_token
-    new_token = 'b'
+    new_token = random_string(10)
+    token_db[new_token] = None
     response.status_code = status.HTTP_201_CREATED
     return {"token": new_token}
 
@@ -100,6 +122,7 @@ def format_response(format):
     else:
         content = 'Welcome!'
         return PlainTextResponse(content=content)
+
 
 def format_farewell(format):
     if format == 'json':
@@ -115,7 +138,7 @@ def format_farewell(format):
 
 @app.get("/welcome_session")
 def welcome_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
-    if session_token != cookie_session:
+    if session_token not in cookie_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     response.status_code = status.HTTP_200_OK
     return format_response(format)
@@ -123,7 +146,7 @@ def welcome_session(response: Response, session_token: Optional[str] = Cookie(No
 
 @app.get("/welcome_token")
 def welcome_token(response: Response, token: Optional[str], format=None):
-    if token != new_token:
+    if token not in token_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     response.status_code = status.HTTP_200_OK
     return format_response(format)
@@ -131,19 +154,17 @@ def welcome_token(response: Response, token: Optional[str], format=None):
 
 @app.delete('/logout_session')
 def logout_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
-    global cookie_session
-    if session_token != cookie_session:
+    if session_token not in cookie_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    cookie_session = None
+    cookie_db.pop(session_token)
     return redirect_response(response, format)
 
 
 @app.delete('/logout_token')
 def logout_token(response: Response, token: Optional[str], format=None):
-    global new_token
-    if token != new_token:
+    if token not in token_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    new_token = None
+    token_db.pop(token)
     return redirect_response(response, format)
 
 
