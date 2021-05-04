@@ -9,7 +9,7 @@ from random import random, choice
 
 from pydantic import json
 from starlette import status
-from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 
 app = FastAPI()
 
@@ -103,7 +103,8 @@ def format_response(format):
 
 def format_farewell(format):
     if format == 'json':
-        return {"message": "Logged out!"}
+        content = {"message": "Logged out!"}
+        return JSONResponse(content=content)
     elif format == 'html':
         content = '<h1>Logged out!</h1>'
         return HTMLResponse(content=content)
