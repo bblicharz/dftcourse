@@ -128,23 +128,32 @@ def welcome_token(response: Response, token: Optional[str], format=None):
     response.status_code = status.HTTP_200_OK
     return format_response(format)
 
+
 @app.delete('/logout_session')
-def logout_session(response: Response, session_token: Optional[str] = Cookie(None)):
+def logout_session(response: Response, session_token: Optional[str] = Cookie(None), format=None):
     global cookie_session
     if session_token != cookie_session:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     cookie_session = None
-    response.status_code = status.HTTP_302_FOUND
-    return RedirectResponse('https://da-plu-2021-burbli.herokuapp.com/logged_out', status_code=302)
+    return redirect_response(response, format)
+
 
 @app.delete('/logout_token')
-def logout_token(response: Response, token: Optional[str]):
+def logout_token(response: Response, token: Optional[str], format=None):
     global new_token
     if token != new_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = None
+    return redirect_response(response, format)
+
+
+def redirect_response(response, format=None):
     response.status_code = status.HTTP_302_FOUND
-    return RedirectResponse('https://da-plu-2021-burbli.herokuapp.com/logged_out', status_code=302)
+    path = '/logged_out'
+    if format:
+        path = path + f'?format={format}'
+
+    return RedirectResponse(path, status_code=302)
 
 
 @app.get('/logged_out')
