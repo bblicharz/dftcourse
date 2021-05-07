@@ -209,3 +209,10 @@ async def customers(response: Response):
     data = app.db_connection.execute('SELECT * FROM Customers ORDER BY CustomerID').fetchall()
     response.status_code = status.HTTP_200_OK
     return {"customers": [x for x in data]}
+
+
+@app.get("/products/{id}")
+async def products_id(id: int):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute("SELECT ProductID, ProductName FROM Products WHERE ProductID = ?", (id,)).fetchone()
+    return {'id': data['ProductID'], 'name': data['ProductName']}
