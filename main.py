@@ -196,7 +196,15 @@ async def shutdown():
 
 
 @app.get("/categories")
-async def categories():
+async def categories(response: Response):
     app.db_connection.row_factory = sqlite3.Row
     data = app.db_connection.execute('SELECT CategoryID, CategoryName FROM Categories ORDER BY CategoryID').fetchall()
+    response.status_code = status.HTTP_200_OK
     return {"categories": [{"id": x['CategoryID'], "name": x["CategoryName"]} for x in data]}
+
+@app.get("/customers")
+async def customers(response: Response):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute('SELECT CustomerID, CompanyName FROM Customers ORDER BY CustomerID').fetchall()
+    response.status_code = status.HTTP_200_OK
+    return {"customers": [{"id": x['CustomerID'], "name": x["CompanyName"]} for x in data]}
