@@ -9,6 +9,8 @@ from fastapi import FastAPI, Response, HTTPException, Cookie
 from starlette import status
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 
+import sqlite3
+
 app = FastAPI()
 
 app.secret_key = "NotSoSecurePa$$"
@@ -182,3 +184,19 @@ def logged_out(response: Response, format=None):
     response.status_code = status.HTTP_200_OK
     return format_farewell(format)
 
+@app.on_event("startup")
+async def startup():
+    app.db_connection = sqlite3.connect("northwind.db")
+    app.db_connection.text_factory = lambda b: b.decode(errors="ignore")  # northwind specific
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    app.db_connection.close()
+
+
+@app.get("/categories")
+async def categories():
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute('SELECT CategoryID, CategoryName FROM Categories ORDER BY CategoryID').fetchall()
+    return {"categories": [{"id": x['CategoryID'], "name": x["CategoryName"]} for x in data]}
