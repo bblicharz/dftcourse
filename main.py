@@ -223,7 +223,12 @@ async def products_id(response: Response, id: int):
 
 
 @app.get("/employees")
-async def employees(response: Response, limit: Optional[int], offset: Optional[int], order: Optional[str]):
+async def employees(
+        response: Response,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order: Optional[str] = None,
+):
     orders = ['first_name', 'last_name', 'city', None]
     if order not in orders:
         raise HTTPException(status_code=400)
