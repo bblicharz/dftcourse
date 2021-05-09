@@ -184,6 +184,7 @@ def logged_out(response: Response, format=None):
     response.status_code = status.HTTP_200_OK
     return format_farewell(format)
 
+
 @app.on_event("startup")
 async def startup():
     app.db_connection = sqlite3.connect("northwind.db")
@@ -256,6 +257,28 @@ async def employees(
         data = app.db_connection.execute(query).fetchall()
     response.status_code = status.HTTP_200_OK
     return {"employees": [{"id": x['EmployeeID'], "last_name": x["LastName"], "first_name": x["FirstName"], "city": x["City"]} for x in data]}
+
+
+@app.get('/products_extended')
+async def products_extended(response: Response):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute(
+        '''
+            SELECT Products.ProductID, Products.ProductName, Categories.CategoryName, Suppliers.CompanyName
+            FROM Products JOIN Categories ON Products.ProductID = Categories.CategoryID 
+            JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID;
+        ''').fetchall()
+    response.status_code = status.HTTP_200_OK
+    return {
+        "products_extended": [
+               {
+                   "id": x['ProductID'],
+                   "name": x['ProductName'],
+                   "category": x["CategoryName"],
+                   "supplier": x["CompanyName"],
+               } for x in data
+          ]
+}
 
 
 
