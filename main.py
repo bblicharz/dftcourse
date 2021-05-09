@@ -236,18 +236,18 @@ async def employees(
     if order is None:
         order = "EmployeeID"
 
-    query = "SELECT EmployeeID, LastName, FirstName, City FROM Employees "
+    query = "SELECT EmployeeID, LastName, FirstName, City FROM Employees ORDER BY {}".format(order)
 
     if limit is not None and offset is not None:
         data = app.db_connection.execute(
-            query + "ORDER BY ? LIMIT ? OFFSET ?", (order, limit, offset)).fetchall()
+            query + "ORDER BY ? LIMIT ? OFFSET ?", (limit, offset)).fetchall()
 
     elif limit is not None:
-        data = app.db_connection.execute(query + "ORDER BY ? LIMIT ?", (order, limit)).fetchall()
+        data = app.db_connection.execute(query + " LIMIT ?", (limit,)).fetchall()
     elif offset is not None:
-        data = app.db_connection.execute(query + "ORDER BY ? OFFSET ?", (order, offset)).fetchall()
+        data = app.db_connection.execute(query + " OFFSET ?", (offset,)).fetchall()
     else:
-        data = app.db_connection.execute(query + "ORDER BY ?", (order,)).fetchall()
+        data = app.db_connection.execute(query).fetchall()
     response.status_code = status.HTTP_200_OK
     return {"employees": [{"id": x['EmployeeID'], "lastname": x["LastName"], "firstname": x["FirstName"], "city": x["City"]} for x in data]}
 
