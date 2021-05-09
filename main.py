@@ -229,14 +229,20 @@ async def employees(
         offset: Optional[int] = None,
         order: Optional[str] = None,
 ):
-    orders = ['first_name', 'last_name', 'city', None]
-    if order not in orders:
-        raise HTTPException(status_code=400)
-    app.db_connection.row_factory = sqlite3.Row
-    if order is None:
-        order = "EmployeeID"
+    valid_ordering_columns = {
+        'first_name': 'FirstName',
+        'last_name': 'LastName',
+        'city': 'City',
+        None: 'EmployeeId'
+    }
+    ordering_column = valid_ordering_columns.get(order)
 
-    query = "SELECT EmployeeID, LastName, FirstName, City FROM Employees ORDER BY {}".format(order)
+    if ordering_column is None:
+        raise HTTPException(status_code=400)
+
+    app.db_connection.row_factory = sqlite3.Row
+
+    query = "SELECT EmployeeID, LastName, FirstName, City FROM Employees ORDER BY {}".format(ordering_column)
 
     if limit is not None and offset is not None:
         data = app.db_connection.execute(
@@ -249,7 +255,7 @@ async def employees(
     else:
         data = app.db_connection.execute(query).fetchall()
     response.status_code = status.HTTP_200_OK
-    return {"employees": [{"id": x['EmployeeID'], "lastname": x["LastName"], "firstname": x["FirstName"], "city": x["City"]} for x in data]}
+    return {"employees": [{"id": x['EmployeeID'], "last_name": x["LastName"], "first_name": x["FirstName"], "city": x["City"]} for x in data]}
 
 
 
