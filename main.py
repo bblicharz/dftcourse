@@ -266,7 +266,7 @@ async def products_extended(response: Response):
         '''
             SELECT Products.ProductID, Products.ProductName, Categories.CategoryName, Suppliers.CompanyName
             FROM Products JOIN Categories ON Products.ProductID = Categories.CategoryID 
-            JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID;
+            JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID ORDER BY ProductID;
         ''').fetchall()
     response.status_code = status.HTTP_200_OK
     return {
