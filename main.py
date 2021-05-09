@@ -246,12 +246,12 @@ async def employees(
 
     if limit is not None and offset is not None:
         data = app.db_connection.execute(
-            query + "ORDER BY ? LIMIT ? OFFSET ?", (limit, offset)).fetchall()
+            query + " LIMIT ? OFFSET ?", (limit, offset)).fetchall()
 
     elif limit is not None:
         data = app.db_connection.execute(query + " LIMIT ?", (limit,)).fetchall()
     elif offset is not None:
-        data = app.db_connection.execute(query + " OFFSET ?", (offset,)).fetchall()
+        data = app.db_connection.execute(query + " LIMIT -1 OFFSET ?", (offset,)).fetchall()
     else:
         data = app.db_connection.execute(query).fetchall()
     response.status_code = status.HTTP_200_OK
