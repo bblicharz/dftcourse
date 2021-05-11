@@ -318,7 +318,7 @@ async def products_id_orders(response: Response, id: int):
                        "id": x['OrderID'],
                        "customer": x['CompanyName'],
                        "quantity": x["Quantity"],
-                       "total_price": round((x['UnitPrice'] * x['Quantity']) - (x['Discount'] * (x['UnitPrice'] * x['Quantity'])))2
+                       "total_price": round((x['UnitPrice'] * x['Quantity']) - (x['Discount'] * (x['UnitPrice'] * x['Quantity'])),2)
                    } for x in data
               ]
         }
