@@ -1,10 +1,10 @@
 import string
 from datetime import date
 from random import choice
-from typing import Optional, OrderedDict
+from typing import Optional, OrderedDict, Dict
 
 from fastapi import FastAPI, Response, HTTPException, Cookie
-
+from pydantic import json
 
 from starlette import status
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
@@ -326,10 +326,59 @@ async def products_id_orders(response: Response, id: int):
 
 
 @app.post('/categories')
-async def categories(category = None):
-    category = {"name": "new test category"}
+async def categories(response: Response, category: Dict):
+    app.db_connection.row_factory = sqlite3.Row
+    app.db_connection.execute(
+        'INSERT INTO Categories (CategoryName) VALUES (?)',
+        (category['name'],)
+    )
+
+    raw_data = app.db_connection.execute('SELECT last_insert_rowid()').fetchall()
+    last_id = raw_data[0]["last_insert_rowid()"]
+    response.status_code = status.HTTP_201_CREATED
+    category['id'] = last_id
+    return category
 
 
+@app.put('/categories/{id}')
+async def categories(response: Response, id: int, category: Dict):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute(
+        'SELECT CategoryID FROM Categories WHERE CategoryID = ?',
+        (id,)
+    ).fetchall()
+
+    if not data:
+        raise HTTPException(404)
+
+    app.db_connection.execute(
+        '''
+        UPDATE Categories SET CategoryName = ?
+        WHERE CategoryID = ?
+        ''',
+        (category['name'], id)
+    )
+
+    category["id"] = id
+    return category
 
 
+@app.delete('/categories/{id}')
+async def categories(response: Response, id: int):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute(
+        'SELECT CategoryID FROM Categories WHERE CategoryID = ?',
+        (id,)
+    ).fetchall()
 
+    if not data:
+        raise HTTPException(404)
+
+    app.db_connection.execute(
+        '''
+        DELETE FROM Categories
+        WHERE CategoryID = ?
+        ''',
+        (id,)
+    )
+    return {"deleted": 1}
