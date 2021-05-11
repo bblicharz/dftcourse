@@ -308,7 +308,7 @@ async def products_id_orders(response: Response, id: int):
         (id,)
     ).fetchall()
 
-    if data is None:
+    if not data:
         raise HTTPException(status_code=404)
     else:
         response.status_code = status.HTTP_200_OK
@@ -318,7 +318,7 @@ async def products_id_orders(response: Response, id: int):
                        "id": x['OrderID'],
                        "customer": x['CompanyName'],
                        "quantity": x["Quantity"],
-                       "total_price": [(x['UnitPrice'] * x['Quantity']) - (x['Discount'] * (x['UnitPrice'] * x['Quantity']))]
+                       "total_price": (x['UnitPrice'] * x['Quantity']) - (x['Discount'] * (x['UnitPrice'] * x['Quantity']))
                    } for x in data
               ]
         }
