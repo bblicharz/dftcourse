@@ -209,7 +209,20 @@ async def customers(response: Response):
     app.db_connection.row_factory = sqlite3.Row
     data = app.db_connection.execute('SELECT * FROM Customers ORDER BY CustomerID').fetchall()
     response.status_code = status.HTTP_200_OK
-    return {"customers": [x for x in data]}
+    ret = []
+    for x in data:
+        address = x['Address'] or ''
+        postal_code = x['PostalCode'] or ''
+        city = x['City'] or ''
+        country = x['Country'] or ''
+        full_address = ' '.join([address, postal_code, city, country])
+        ret.append({
+            'id': x['CustomerID'],
+            'name': x['CompanyName'],
+            'full_address': full_address
+        })
+
+    return {"customers": ret}
 
 
 @app.get("/products/{id}")
