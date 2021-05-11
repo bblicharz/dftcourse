@@ -207,7 +207,7 @@ async def categories(response: Response):
 @app.get("/customers")
 async def customers(response: Response):
     app.db_connection.row_factory = sqlite3.Row
-    data = app.db_connection.execute('SELECT * FROM Customers ORDER BY CustomerID').fetchall()
+    data = app.db_connection.execute('SELECT * FROM Customers ORDER BY UPPER(CustomerID)').fetchall()
     response.status_code = status.HTTP_200_OK
     ret = []
     for x in data:
