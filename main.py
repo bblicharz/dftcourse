@@ -278,7 +278,7 @@ async def products_extended(response: Response):
     data = app.db_connection.execute(
         '''
             SELECT Products.ProductID, Products.ProductName, Categories.CategoryName, Suppliers.CompanyName
-            FROM Products JOIN Categories ON Products.ProductID = Categories.CategoryID 
+            FROM Products JOIN Categories ON Products.CategoryID = Categories.CategoryID 
             JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID ORDER BY ProductID;
         ''').fetchall()
     response.status_code = status.HTTP_200_OK
@@ -291,7 +291,7 @@ async def products_extended(response: Response):
                    "supplier": x["CompanyName"],
                } for x in data
           ]
-}
+    }
 
 
 
