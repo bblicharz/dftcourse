@@ -293,6 +293,37 @@ async def products_extended(response: Response):
           ]
     }
 
+@app.get('/products/{id}/orders')
+async def products_id_orders(response: Response, id: int):
+    app.db_connection.row_factory = sqlite3.Row
+    data = app.db_connection.execute(
+        '''
+        SELECT Orders.OrderID, Customers.CompanyName, "Order Details".*
+        FROM Orders 
+        JOIN Customers ON Orders.CustomerID = Customers.CustomerID 
+        JOIN "Order Details" ON Orders.OrderID = "Order Details".OrderID 
+        WHERE ProductID = ?
+        Order by Orders.OrderID
+        ''',
+        (id,)
+    ).fetchall()
+
+    if data is None:
+        raise HTTPException(status_code=404)
+    else:
+        response.status_code = status.HTTP_200_OK
+        return {
+            "orders": [
+                   {
+                       "id": x['OrderID'],
+                       "customer": x['CompanyName'],
+                       "quantity": x["Quantity"],
+                       "total_price": [(x['UnitPrice'] * x['Quantity']) - (x['Discount'] * (x['UnitPrice'] * x['Quantity']))]
+                   } for x in data
+              ]
+        }
+
+
 
 
 
