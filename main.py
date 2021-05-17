@@ -4,12 +4,15 @@ from random import choice
 from typing import Optional, OrderedDict, Dict
 
 from fastapi import FastAPI, Response, HTTPException, Cookie
-from pydantic import json
+from sqlalchemy.orm import Session
 
 from starlette import status
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 
 import sqlite3
+
+from database import get_db
+from models import Supplier
 
 app = FastAPI()
 
@@ -382,3 +385,8 @@ async def categories(response: Response, id: int):
         (id,)
     )
     return {"deleted": 1}
+
+
+@app.get('/suppliers')
+def suppliers(db: Session = Depends(get_db)):
+    return db.query(Supplier).order_by(Supplier.SupplierID).all()
