@@ -390,7 +390,9 @@ async def categories(response: Response, id: int):
 
 @app.get('/suppliers')
 def suppliers(db: Session = Depends(get_db)):
-    return db.query(Supplier).order_by(Supplier.SupplierID).all()
+    db_suppliers: List[Supplier] = db.query(Supplier).order_by(Supplier.SupplierID).all()
+    return [{"SupplierID": x.SupplierID, "CompanyName": x.CompanyName} for x in db_suppliers]
+
 
 @app.get('/suppliers/{id}')
 def suppliers_id(id: int, db: Session = Depends(get_db)):
