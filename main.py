@@ -3,7 +3,6 @@ from datetime import date
 from random import choice
 from typing import Optional, OrderedDict, Dict
 
-import crud as crud
 from fastapi import FastAPI, Response, HTTPException, Cookie
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
