@@ -439,7 +439,19 @@ def suppliers(supplier: Dict, db: Session = Depends(get_db)):
     supplier_row = Supplier(**supplier)
     db.add(supplier_row)
     db.commit()
-    supplier["SupplierID"] = supplier_row.SupplierID
-    return supplier
+    ret = {
+        "SupplierID": supplier_row.SupplierID,
+        "CompanyName": supplier_row.CompanyName,
+        "ContactName": supplier_row.ContactName,
+        "ContactTitle": supplier_row.ContactTitle,
+        "Address": supplier_row.Address,
+        "City": supplier_row.City,
+        "PostalCode": supplier_row.PostalCode,
+        "Country": supplier_row.Country,
+        "Phone": supplier_row.Phone,
+        "Fax": supplier_row.Fax,
+        "HomePage": supplier_row.HomePage,
+    }
+    return ret
 
 
