@@ -417,11 +417,11 @@ def suppliers_id(id: int, db: Session = Depends(get_db)):
 
 @app.get('/suppliers/{id}/products')
 def suppliers_id_products(id: int, db: Session = Depends(get_db)):
-    db_products = db.query(Product).when(Product.SupplierID == id).order_by(desc(Product.ProductID)).all()
+    db_products: List[Product] = db.query(Product).filter(Product.SupplierID == id).order_by(desc(Product.ProductID)).all()
     if db_products is None:
         raise HTTPException(status_code=404)
-    return [{'ProductID': x['ProductID'], 'ProductName': x['ProductName'], 'Category': x['Category'],
-             'Discontinued': x['Discontinued']} for x in db_products]
+    return [{'ProductID': x.ProductID, 'ProductName': x.ProductName, 'CategoryID': x.CategoryID,
+             'Discontinued': x.Discontinued} for x in db_products]
 
 @app.post('/suppliers')
 def suppliers(suppliers: Dict, response: Response, db: Session = Depends(get_db)):
