@@ -394,24 +394,23 @@ def suppliers(db: Session = Depends(get_db)):
 
 @app.get('/suppliers/{id}')
 def suppliers_id(id: int, db: Session = Depends(get_db)):
-    db_supplier: List[Supplier] = db.query(Supplier).filter(Supplier.SupplierID == id).all()
+    db_supplier: Supplier = db.query(Supplier).filter(Supplier.SupplierID == id).one_or_none()
     if db_supplier is None:
         raise HTTPException(status_code=404)
-    return [
-        {
-            "SupplierID": x.SupplierID,
-            "CompanyName": x.CompanyName,
-            "ContactName": x.ContactName,
-            "ContactTitle": x.ContactTitle,
-            "Address": x.Address,
-            "City": x.City,
-            "Region": x.Region,
-            "PostalCode": x.PostalCode,
-            "Country": x.Country,
-            "Phone": x.Phone,
-            "Fax": x.Fax,
-            "HomePage": x.HomePage
-        } for x in db_supplier]
+    return {
+            "SupplierID": db_supplier.SupplierID,
+            "CompanyName": db_supplier.CompanyName,
+            "ContactName": db_supplier.ContactName,
+            "ContactTitle": db_supplier.ContactTitle,
+            "Address": db_supplier.Address,
+            "City": db_supplier.City,
+            "Region": db_supplier.Region,
+            "PostalCode": db_supplier.PostalCode,
+            "Country": db_supplier.Country,
+            "Phone": db_supplier.Phone,
+            "Fax": db_supplier.Fax,
+            "HomePage": db_supplier.HomePage
+        }
 
 
 @app.get('/suppliers/{id}/products')
