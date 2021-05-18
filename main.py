@@ -463,6 +463,7 @@ def suppliers(id: int, supplier: Dict, db: Session = Depends(get_db)):
     for key, value in supplier.items():
         setattr(supplier_row, key, value)
 
+    db.commit()
     ret = {
         "SupplierID": supplier_row.SupplierID,
         "CompanyName": supplier_row.CompanyName,
