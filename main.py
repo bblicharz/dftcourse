@@ -1,7 +1,7 @@
 import string
 from datetime import date
 from random import choice
-from typing import Optional, OrderedDict, Dict
+from typing import Optional, OrderedDict, Dict, List
 
 from fastapi import FastAPI, Response, HTTPException, Cookie
 from sqlalchemy import desc
@@ -394,23 +394,23 @@ def suppliers(db: Session = Depends(get_db)):
 
 @app.get('/suppliers/{id}')
 def suppliers_id(id: int, db: Session = Depends(get_db)):
-    db_supplier = db.query(Supplier).when(Supplier.SupplierID == id).all()
+    db_supplier: List[Supplier] = db.query(Supplier).filter(Supplier.SupplierID == id).all()
     if db_supplier is None:
         raise HTTPException(status_code=404)
     return [
         {
-            "SupplierID": x['SupplierID'],
-            "CompanyName": x['CompanyName'],
-            "ContactName": x['ContactName'],
-            "ContactTitle": x['ContactTitle'],
-            "Address": x['Address'],
-            "City": x['City'],
-            "Region": x['Region'],
-            "PostalCode": x['PostalCode'],
-            "Country": x['Country'],
-            "Phone": x['Phone'],
-            "Fax": x['Fax'],
-            "HomePage": x['HomePage']
+            "SupplierID": x.SupplierID,
+            "CompanyName": x.CompanyName,
+            "ContactName": x.ContactName,
+            "ContactTitle": x.ContactTitle,
+            "Address": x.Address,
+            "City": x.City,
+            "Region": x.Region,
+            "PostalCode": x.PostalCode,
+            "Country": x.Country,
+            "Phone": x.Phone,
+            "Fax": x.Fax,
+            "HomePage": x.HomePage
         } for x in db_supplier]
 
 
