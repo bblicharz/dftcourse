@@ -424,7 +424,7 @@ def suppliers_id_products(id: int, db: Session = Depends(get_db)):
             .order_by(desc(Product.ProductID)).
             all()
     )
-    if db_products is None:
+    if not db_products:
         raise HTTPException(status_code=404)
     return [
         {'ProductID': p.ProductID,
