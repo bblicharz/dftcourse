@@ -3,7 +3,9 @@ from datetime import date
 from random import choice
 from typing import Optional, OrderedDict, Dict
 
+import crud as crud
 from fastapi import FastAPI, Response, HTTPException, Cookie
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from starlette import status
@@ -12,7 +14,7 @@ from starlette.responses import HTMLResponse, PlainTextResponse, RedirectRespons
 import sqlite3
 
 from database import get_db
-from models import Supplier
+from models import Supplier, Product
 
 app = FastAPI()
 
@@ -390,3 +392,46 @@ async def categories(response: Response, id: int):
 @app.get('/suppliers')
 def suppliers(db: Session = Depends(get_db)):
     return db.query(Supplier).order_by(Supplier.SupplierID).all()
+
+@app.get('/suppliers/{id}')
+def suppliers_id(id: int, db: Session = Depends(get_db)):
+    db_supplier = db.query(Supplier).when(Supplier.SupplierID == id).all()
+    if db_supplier is None:
+        raise HTTPException(status_code=404)
+    return [
+        {
+            "SupplierID": x['SupplierID'],
+            "CompanyName": x['CompanyName'],
+            "ContactName": x['ContactName'],
+            "ContactTitle": x['ContactTitle'],
+            "Address": x['Address'],
+            "City": x['City'],
+            "Region": x['Region'],
+            "PostalCode": x['PostalCode'],
+            "Country": x['Country'],
+            "Phone": x['Phone'],
+            "Fax": x['Fax'],
+            "HomePage": x['HomePage']
+        } for x in db_supplier]
+
+
+@app.get('/suppliers/{id}/products')
+def suppliers_id_products(id: int, db: Session = Depends(get_db)):
+    db_products = db.query(Product).when(Product.SupplierID == id).order_by(desc(Product.ProductID)).all()
+    if db_products is None:
+        raise HTTPException(status_code=404)
+    return [{'ProductID': x['ProductID'], 'ProductName': x['ProductName'], 'Category': x['Category'],
+             'Discontinued': x['Discontinued']} for x in db_products]
+
+@app.post('/suppliers')
+def suppliers(suppliers: Dict, response: Response, db: Session = Depends(get_db)):
+    db_suppliers = db.query(Supplier).all()
+    for var, value in vars(suppliers).items():
+        setattr(db_suppliers, var, value) if value else None
+    db.add(db_suppliers)
+    db.commit()
+    db.refresh(db_suppliers)
+    return db_suppliers
+
+
+
