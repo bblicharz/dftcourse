@@ -434,7 +434,7 @@ def suppliers_id_products(id: int, db: Session = Depends(get_db)):
          } for p, c in db_products]
 
 
-@app.post('/suppliers')
+@app.post('/suppliers', status_code=201)
 def suppliers(supplier: Dict, db: Session = Depends(get_db)):
     supplier_row = Supplier(**supplier)
     db.add(supplier_row)
