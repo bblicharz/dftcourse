@@ -454,6 +454,7 @@ def suppliers(supplier: Dict, db: Session = Depends(get_db)):
     }
     return ret
 
+
 @app.put('/suppliers/{id}', status_code=200)
 def suppliers(id: int, supplier: Dict, db: Session = Depends(get_db)):
     supplier_row = db.query(Supplier).filter(Supplier.SupplierID==id).one_or_none()
@@ -478,3 +479,14 @@ def suppliers(id: int, supplier: Dict, db: Session = Depends(get_db)):
         "HomePage": supplier_row.HomePage,
     }
     return ret
+
+
+@app.delete('/suppliers/{id}', status_code=204)
+def suppliers(id: int, db: Session = Depends(get_db)):
+    supplier_row = db.query(Supplier).filter(Supplier.SupplierID==id).one_or_none()
+    if supplier_row is None:
+        raise HTTPException(404)
+
+    db.delete(supplier_row)
+    db.commit()
+    return
