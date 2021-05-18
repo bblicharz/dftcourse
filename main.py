@@ -434,9 +434,15 @@ def suppliers_id_products(id: int, db: Session = Depends(get_db)):
          } for p, c in db_products]
 
 
+FAKE_ID = 50
+
+
 @app.post('/suppliers', status_code=201)
 def suppliers(supplier: Dict, db: Session = Depends(get_db)):
+    global FAKE_ID
     supplier_row = Supplier(**supplier)
+    supplier_row.SupplierID = FAKE_ID
+    FAKE_ID += 1
     db.add(supplier_row)
     db.commit()
     ret = {
