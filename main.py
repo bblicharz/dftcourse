@@ -433,15 +433,13 @@ def suppliers_id_products(id: int, db: Session = Depends(get_db)):
          'Discontinued': p.Discontinued
          } for p, c in db_products]
 
-@app.post('/suppliers')
-def suppliers(suppliers: Dict, response: Response, db: Session = Depends(get_db)):
-    db_suppliers = db.query(Supplier).all()
-    for var, value in vars(suppliers).items():
-        setattr(db_suppliers, var, value) if value else None
-    db.add(db_suppliers)
-    db.commit()
-    db.refresh(db_suppliers)
-    return db_suppliers
 
+@app.post('/suppliers')
+def suppliers(supplier: Dict, db: Session = Depends(get_db)):
+    supplier_row = Supplier(**supplier)
+    db.add(supplier_row)
+    db.commit()
+    supplier["SupplierID"] = supplier_row.SupplierID
+    return supplier
 
 
