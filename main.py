@@ -13,7 +13,7 @@ from starlette.responses import HTMLResponse, PlainTextResponse, RedirectRespons
 import sqlite3
 
 from database import get_db
-from models import Supplier, Product
+from models import Supplier, Product, Category
 
 app = FastAPI()
 
@@ -417,11 +417,21 @@ def suppliers_id(id: int, db: Session = Depends(get_db)):
 
 @app.get('/suppliers/{id}/products')
 def suppliers_id_products(id: int, db: Session = Depends(get_db)):
-    db_products: List[Product] = db.query(Product).filter(Product.SupplierID == id).order_by(desc(Product.ProductID)).all()
+    db_products: List[Product] = (
+        db.query(Product, Category)
+            .join(Category, Product.CategoryID==Category.CategoryID)
+            .filter(Product.SupplierID == id)
+            .order_by(desc(Product.ProductID)).
+            all()
+    )
     if db_products is None:
         raise HTTPException(status_code=404)
-    return [{'ProductID': x.ProductID, 'ProductName': x.ProductName, 'CategoryID': x.CategoryID,
-             'Discontinued': x.Discontinued} for x in db_products]
+    return [
+        {'ProductID': p.ProductID,
+         'ProductName': p.ProductName,
+         "Category": {"CategoryID": c.CategoryID, "CategoryName": c.CategoryName},
+         'Discontinued': p.Discontinued
+         } for p, c in db_products]
 
 @app.post('/suppliers')
 def suppliers(suppliers: Dict, response: Response, db: Session = Depends(get_db)):
