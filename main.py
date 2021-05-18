@@ -454,4 +454,26 @@ def suppliers(supplier: Dict, db: Session = Depends(get_db)):
     }
     return ret
 
+@app.put('/suppliers/{id}', status_code=200)
+def suppliers(id: int, supplier: Dict, db: Session = Depends(get_db)):
+    supplier_row = db.query(Supplier).filter(Supplier.SupplierID==id).one_or_none()
+    if supplier_row is None:
+        raise HTTPException(404)
 
+    for key, value in supplier.items():
+        setattr(supplier_row, key, value)
+
+    ret = {
+        "SupplierID": supplier_row.SupplierID,
+        "CompanyName": supplier_row.CompanyName,
+        "ContactName": supplier_row.ContactName,
+        "ContactTitle": supplier_row.ContactTitle,
+        "Address": supplier_row.Address,
+        "City": supplier_row.City,
+        "PostalCode": supplier_row.PostalCode,
+        "Country": supplier_row.Country,
+        "Phone": supplier_row.Phone,
+        "Fax": supplier_row.Fax,
+        "HomePage": supplier_row.HomePage,
+    }
+    return ret
